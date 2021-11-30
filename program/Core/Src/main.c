@@ -124,7 +124,7 @@ int main(void)
   {
 		DHT11_Read(&my_dht11);
 		HAL_ADC_Start(&hadc1);
-		HAL_ADC_PollForConversion(&hadc1, 10);//等待转换完成， 第二个参数表示超时时间，单位ms.
+		HAL_ADC_PollForConversion(&hadc1, 10);//等待转换完成 第二个参数表示超时时间，单位ms.
 		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))	
 			AD_Value = HAL_ADC_GetValue(&hadc1);
 		HAL_Delay(1000);
@@ -218,7 +218,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -276,8 +276,8 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -318,16 +318,16 @@ uint8_t stm32_i2c_cb(Sofei2cMaster *i2c, uint8_t msg)
 		case SI2C_MSG_OUTPUT_SCL:		break;
 		case SI2C_MSG_SET_SCL:			OLED_I2C_SCL_GPIO_Port->ODR |= OLED_I2C_SCL_Pin;break;
 		case SI2C_MSG_RESET_SCL:		OLED_I2C_SCL_GPIO_Port->ODR &= ~OLED_I2C_SCL_Pin;break;
-//		case SI2C_MSG_BUF_DELAY:  	delay_ns(1300);break;	//停止信号与开始信号间的总线释放时间(SSD1306、TMP75为1.3us)
-//		case SI2C_MSG_SUSTA_DELAY:	delay_ns(600);break;	//重复开始信号的建立时间(SCL=1的最短时间，SSD1306、TMP75为0.6us)
-//		case SI2C_MSG_HDSTA_DELAY:	delay_ns(600);break;	//开始信号的保持时间(SDA拉低的最短时间，在这之后产生第一个时钟信号，SSD1306、TMP75为0.6us)
-//		case SI2C_MSG_SUSTO_DELAY:	delay_ns(600);break;	//停止信号的建立时间（SDA拉高前SCL=1，SDA=0的保持时间，SSD1306、TMP75为0.6us)
-//		case SI2C_MSG_HDDAT_DELAY:	break;								//数据保持时间(SCL=0后数据需要保持不变的时间，TMP75为4ns,很短,IO频率超过250M才需要?)
-//		case SI2C_MSG_SUDAT_DELAY:	delay_ns(100);break;	//数据建立时间(SCL=1前SDA需要保持状态的时间，SSD1306、TMP75为100ns，在读写时序中被SCL延时覆盖，在ack中需使用，若频率低于10M则不需要?)
-//		case SI2C_MSG_SCLL_DELAY:		delay_us(2);break;		//SCL低电平时间(读写时序中的主要延时，TMP75为1.3us min)
-//		case SI2C_MSG_SCLH_DELAY:		delay_us(2);break;		//SCL高电平时间(读写时序中的主要延时, TMP75为0.6us min)
-		default: break;//这里都不需要使用额外延时，2层回调 即使168M的STM32F4，调用回调的时间也已经够长了，当然不注释掉要使用延时也可以
-		//对于有些外设，读的时候需要适当慢一点，要不然外设反应不过来
+//		case SI2C_MSG_BUF_DELAY:  	delay_ns(1300);break;	//停止信号与开始信号间的�?�线释放时间(SSD1306、TMP75�?1.3us)
+//		case SI2C_MSG_SUSTA_DELAY:	delay_ns(600);break;	//重复�?始信号的建立时间(SCL=1的最短时间，SSD1306、TMP75�?0.6us)
+//		case SI2C_MSG_HDSTA_DELAY:	delay_ns(600);break;	//�?始信号的保持时间(SDA拉低的最短时间，在这之后产生第一个时钟信号，SSD1306、TMP75�?0.6us)
+//		case SI2C_MSG_SUSTO_DELAY:	delay_ns(600);break;	//停止信号的建立时间（SDA拉高前SCL=1，SDA=0的保持时间，SSD1306、TMP75�?0.6us)
+//		case SI2C_MSG_HDDAT_DELAY:	break;								//数据保持时间(SCL=0后数据需要保持不变的时间，TMP75�?4ns,很短,IO频率超过250M才需�??)
+//		case SI2C_MSG_SUDAT_DELAY:	delay_ns(100);break;	//数据建立时间(SCL=1前SDA�?要保持状态的时间，SSD1306、TMP75�?100ns，在读写时序中被SCL延时覆盖，在ack中需使用，若频率低于10M则不�?�??)
+//		case SI2C_MSG_SCLL_DELAY:		delay_us(2);break;		//SCL低电平时�?(读写时序中的主要延时，TMP75�?1.3us min)
+//		case SI2C_MSG_SCLH_DELAY:		delay_us(2);break;		//SCL高电平时�?(读写时序中的主要延时, TMP75�?0.6us min)
+		default: break;//这里都不�?要使用额外延时，2层回�? 即使168M的STM32F4，调用回调的时间也已经够长了，当然不注释掉要使用延时也可�?
+		//对于有些外设，读的时候需要�?�当慢一点，要不然外设反应不过来
 	}
 	return 0;
 }
