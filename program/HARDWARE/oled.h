@@ -31,6 +31,40 @@
 	头文件的包含	
 	#include <stdint.h>	
 */
+/***OLED功能命令/操作码***/
+typedef enum
+{
+	SSD1306_SET_CONTRAST_CONTROL		= 0x81,		//设置亮度，后还需要发一个亮度大小的字节,范围0x00~0xFF
+	SSD1306_ENTIRE_DISPLAY_OFF			= 0xA4,		//跟随GRAM内容显示 (RESET)
+	SSD1306_ENTIRE_DISPLAY_ON				= 0xA5,		//填充屏幕而不管GRAM
+	SSD1306_INVERSE_DISPLAY_OFF			= 0xA6,		//正常显示模式 (RESET)
+	SSD1306_INVERSE_DISPLAY_ON			= 0xA7,		//反色显示
+	SSD1306_DISPALY_OFF							= 0xAE,		//休眠模式 (RESET)
+	SSD1306_DISPLAY_ON							= 0xAF,		//工作模式
+	/*
+	0x00~0x0f:页寻址模式下设置列地址低4位
+	0x10~0x1f:页寻址模式下设置列地址低4位
+	*/
+	SSD1306_SET_ADDRESSING_MODE			= 0x20,		//设置寻址模式，后还需要发一个字节	0x00:水平寻址 0x01:竖直寻址	0x02:页寻址
+	SSD1306_SET_COLUMN_ADDRESS			= 0x21,		//设置列开始/结束地址，后发两个字节，低7位有效，范围0-127d，仅水平/竖直寻址模式可用
+	SSD1306_SET_PAGE_ADDRESS				=	0x22,		//设置页开始/结束地址，后发两个字节，低3位有效，范围0-7d，仅水平/竖直寻址模式可用
+	SSD1306_ADDRESS_MODE_HORIZONTAL = 0x00,
+	SSD1306_ADDRESS_MODE_VERTICAL		= 0x01,
+	SSD1306_ADDRESS_MODE_PAGE				= 0x02,
+	/*
+	0xB0~0xB7:页寻址模式下设置页地址 0~7d
+	0x40~0x7F:低6位有效， 0~63d 设置start line register,改变ROW和RAM之间的映射，设置为0x41时，ROW0映射为RAM1，0x48时，ROW0映射为RAM8
+	*/
+	SSD1306_COLUMN_REMAP_OFF				= 0xA0,		//COLUMN 0 IS MAPPED TO SEG0 (RESET)(仅影响配置之后的数据)
+	SSD1306_COLUMN_REMAP_ON					= 0xA1,		//COLUMN 127 IS MAPPED TO SEG0 (仅影响配置之后的数据)
+	SSD1306_SET_MULTIPLEX_RATIO			= 0xA8,		//设置COM显示范围，后需要发一个字节，低6位有效，范围15d~63d(RESET:63 代表64MUX)
+	SSD1306_ROW_REMAP_OFF						= 0xC0,		//正常显示模式，COM0-COM[N-1] N:MULTIPLEX RATIO (RESET) (立即对已有数据影响)
+	SSD1306_ROW_REMAP_ON						= 0xC8,		//显示图像竖直镜像翻转，扫描模式COM[N-1]-COM0(立即对已有数据影响)
+	SSD1306_SET_DISPLAY_OFFSET			= 0xD3,		//设置COM和ROW之间的映射，后跟一个字节，低6位有效，范围0-63d(RESET:0),设置为8时，COM8映射为ROW0.
+}ssd1306_op_code;
+
+
+/***封装库的变量、函数定义及声明***/
 //回调函数cb所使用的消息（用于调用不同底层接口）
 typedef enum
 {
@@ -40,7 +74,6 @@ typedef enum
     OLED_MSG_I2C_WAIT_ACK,
     OLED_MSG_I2C_WRITE_BYTE
 }OLED_CB_MSG;
-
 typedef struct _oled_t OLED_t;
 typedef uint8_t (*oled_cb)(OLED_t *slf,OLED_CB_MSG msg, uint8_t data_byte);
 struct _oled_t
@@ -48,14 +81,17 @@ struct _oled_t
     oled_cb cb;
 };
 
+/***类方法***/
 //OLED类的实例化，即创建一个oled对象
 //oled_cb: oled类包含操作底层I/O的方法，用户需重写该方法
 void New_OLED(OLED_t *slf, oled_cb oled_cb);
 
-//void OLED_WriteCmd(OLED_t *slf, uint8_t byte_to_write);
+/***半私有方法**/
+void OLED_WriteCmd(OLED_t *slf, uint8_t byte_to_write);
 
-//void OLED_WriteData(OLED_t *slf, uint8_t byte_to_write);
+void OLED_WriteData(OLED_t *slf, uint8_t byte_to_write);
 
+/***功能函数**/
 void OLED_Clear(OLED_t *slf);
 //OLED设置显示位置
 void OLED_SetPos(OLED_t *slf, uint8_t x, uint8_t y);
@@ -64,6 +100,18 @@ void OLED_ON(OLED_t *slf);
 
 void OLED_OFF(OLED_t *slf);
 
+void OLED_Entire_Display_On(OLED_t *slf);
+
+void OLED_Entire_Display_Off(OLED_t *slf);
+
+void OLED_Display_Inverse_Enable(OLED_t *slf);
+	
+void OLED_Display_Inverse_Disable(OLED_t *slf);
+
+void OLED_Display_Flip_Enable(OLED_t *slf);
+
+void OLED_Display_Flip_Disable(OLED_t *slf);
+
 void fill_picture(OLED_t *slf, uint8_t fill_Data);
 
 void OLED_ShowChar(OLED_t *slf, uint8_t x, uint8_t y, uint8_t chr, uint8_t Char_Size);
@@ -71,6 +119,7 @@ void OLED_ShowChar(OLED_t *slf, uint8_t x, uint8_t y, uint8_t chr, uint8_t Char_
 void OLED_ShowString(OLED_t *slf, uint8_t x, uint8_t y, char *str, uint8_t Char_Size);
 
 void OLED_Init(OLED_t *slf);
+
 
 #endif
 
