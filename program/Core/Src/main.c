@@ -111,11 +111,12 @@ int main(void)
 	New_OLED(&my_oled, stm32_oled_cb);
 	DHT11_Init(&my_dht11, DHT11_STM32_cb);
 	OLED_Init(&my_oled);
-	OLED_ShowString(&my_oled, 0, 4, "hello world!", 16);
+	OLED_Display_Flip_Disable(&my_oled);
+	OLED_ShowString(&my_oled, 0, 0, "hello world!", 16);
+
 	char *str = "RS232\r\n";
 	uint16_t len = strlen(str);
 	HAL_UART_Transmit_IT(&huart1,(uint8_t *)str, len);
-//	fill_picture(&my_oled, 0xff);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -127,7 +128,8 @@ int main(void)
 		HAL_ADC_PollForConversion(&hadc1, 10);//等待转换完成 第二个参数表示超时时间，单位ms.
 		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))	
 			AD_Value = HAL_ADC_GetValue(&hadc1);
-		HAL_Delay(1000);
+		HAL_Delay(500);
+		HAL_Delay(500);
 		DHT11_Fget(&my_dht11, &humi, &temp);
 		snprintf((char*)usart_sendbuf, sizeof(usart_sendbuf), "Temp:%.1f, Humi:%.1f, AD_Value:%d\r\n", temp, humi, AD_Value);
 		HAL_UART_Transmit_IT(&huart1, usart_sendbuf, strlen((char*)usart_sendbuf));

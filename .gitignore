@@ -1,0 +1,44 @@
+#CUBE HAL忽略文件
+!/**/MDK-ARM/
+/**/MDK-ARM/*
+
+!/**/MDK-ARM/*.uvoptx
+!/**/MDK-ARM/*.uvprojx
+!/**/MDK-ARM/*.lst
+!/**/MDK-ARM/*.s
+
+#STM32 STD库忽略文件
+/**/OBJ/
+!/**/USER/
+/**/USER/*
+!/**/USER/*.c
+!/**/USER/*.h
+!/**/USER/*.uvoptx
+!/**/USER/*.uvprojx
+
+#KEIL C51忽略文件
+*.hex
+*.axf
+*.htm
+*.lnp
+*.map
+*.sct
+*.sct.Bak
+*.crf
+*.d
+*.o
+*.dep
+*.ewd
+*.ewp
+*.ewt
+*.eww
+*.pdsprj*workspace
+*.uvgui.*
+*.pdsbak
+/**/Debug/
+/**/Listings/
+/**/Objects/
+/**/settings/
+
+
+

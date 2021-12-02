@@ -77,7 +77,7 @@ void OLED_Clear(OLED_t *slf)
   }
 }
 
-//OLED设置显示位置
+//OLED设置显示位置 (仅Page Addressing模式下)
 void OLED_SetPos(OLED_t *slf, uint8_t x, uint8_t y)
 {
 	OLED_WriteCmd(slf, 0xb0 + y);
@@ -90,7 +90,7 @@ void OLED_ON(OLED_t *slf)
 {
   OLED_WriteCmd(slf, 0X8D);  //设置电荷泵
   OLED_WriteCmd(slf, 0X14);  //开启电荷泵
-  OLED_WriteCmd(slf, 0XAF);  //OLED唤醒
+  OLED_WriteCmd(slf, SSD1306_DISPLAY_ON);  //OLED唤醒
 }
  
 //------让OLED休眠 -- 休眠模式下,OLED功耗不到10uA------
@@ -98,11 +98,46 @@ void OLED_OFF(OLED_t *slf)
 {
   OLED_WriteCmd(slf, 0X8D);  //设置电荷泵
   OLED_WriteCmd(slf, 0X10);  //关闭电荷泵
-  OLED_WriteCmd(slf, 0XAE);  //OLED休眠
+  OLED_WriteCmd(slf, SSD1306_DISPALY_OFF);  //OLED休眠
 }
- /********************************************
+
+//OLED全填充显示
+void OLED_Entire_Display_On(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_ENTIRE_DISPLAY_ON);
+}
+//OLED全填充显示
+void OLED_Entire_Display_Off(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_ENTIRE_DISPLAY_OFF);
+}
+
+//OLED反色显示(bit0代表亮)
+void OLED_Display_Inverse_Enable(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_INVERSE_DISPLAY_ON);
+}
+//OLED正色显示(bit1代表亮)
+void OLED_Display_Inverse_Disable(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_INVERSE_DISPLAY_OFF);
+}
+//OLED翻转显示
+void OLED_Display_Flip_Enable(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_COLUMN_REMAP_ON);
+	OLED_WriteCmd(slf, SSD1306_ROW_REMAP_ON);
+}
+//OLED不翻转显示
+void OLED_Display_Flip_Disable(OLED_t *slf)
+{
+	OLED_WriteCmd(slf, SSD1306_COLUMN_REMAP_OFF);
+	OLED_WriteCmd(slf, SSD1306_ROW_REMAP_OFF);
+}
+/********************************************
 // fill_Picture
 ********************************************/
+
 void fill_picture(OLED_t *slf, uint8_t fill_Data)
 {
 	uint8_t m,n;
@@ -159,34 +194,44 @@ void OLED_ShowString(OLED_t *slf, uint8_t x, uint8_t y, char *str, uint8_t Char_
 void OLED_Init(OLED_t *slf)
 {
 	I2C_Init();
- 	OLED_WriteCmd(slf, 0xAE);//--turn off oled panel
-	OLED_WriteCmd(slf, 0x00);//---set low column address
-	OLED_WriteCmd(slf, 0x10);//---set high column address
-	OLED_WriteCmd(slf, 0x40);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
-	OLED_WriteCmd(slf, 0x81);//--set contrast control register
+ 	OLED_WriteCmd(slf, SSD1306_DISPALY_OFF);//--turn off oled panel
+	
+	OLED_WriteCmd(slf, SSD1306_SET_CONTRAST_CONTROL);//--set contrast control register
 	OLED_WriteCmd(slf, 0xCF); // Set SEG Output Current Brightness
-	OLED_WriteCmd(slf, 0xA1);//--Set SEG/Column Mapping     0xa0???? 0xa1??
-	OLED_WriteCmd(slf, 0xC8);//Set COM/Row Scan Direction   0xc0???? 0xc8??
-	OLED_WriteCmd(slf, 0xA6);//--set normal display
-	OLED_WriteCmd(slf, 0xA8);//--set multiplex ratio(1 to 64)
+	
+	OLED_WriteCmd(slf, SSD1306_ENTIRE_DISPLAY_OFF);// Disable Entire Display On (0xa4/0xa5)
+	OLED_WriteCmd(slf, SSD1306_INVERSE_DISPLAY_OFF);// Disable Inverse Display On (0xa6/a7) 
+	
+	OLED_WriteCmd(slf, SSD1306_SET_ADDRESSING_MODE);//Set Addressing Mode (0x00/0x01/0x02)
+	OLED_WriteCmd(slf, SSD1306_ADDRESS_MODE_PAGE);//Page Addressing Mode
+	
+	OLED_WriteCmd(slf, 0x40);//--set start line address  Set Mapping RAM Display Start Line (0x40~0x7F)
+	
+	OLED_WriteCmd(slf, SSD1306_COLUMN_REMAP_ON);//--Set SEG/Column Mapping     0xa0???? 0xa1??
+	OLED_WriteCmd(slf, SSD1306_ROW_REMAP_ON);//Set COM/Row Scan Direction   0xc0???? 0xc8??
+	
+	OLED_WriteCmd(slf, SSD1306_SET_MULTIPLEX_RATIO);//--set multiplex ratio(1 to 64)
 	OLED_WriteCmd(slf, 0x3f);//--1/64 duty
-	OLED_WriteCmd(slf, 0xD3);//-set display offset	Shift Mapping RAM Counter (0x00~0x3F)
+	
+	OLED_WriteCmd(slf, SSD1306_SET_DISPLAY_OFFSET);//-set display offset	Shift Mapping RAM Counter (0x00~0x3F)
 	OLED_WriteCmd(slf, 0x00);//-not offset
-	OLED_WriteCmd(slf, 0xd5);//--set display clock divide ratio/oscillator frequency
-	OLED_WriteCmd(slf, 0x80);//--set divide ratio, Set Clock as 100 Frames/Sec
-	OLED_WriteCmd(slf, 0xD9);//--set pre-charge period
-	OLED_WriteCmd(slf, 0xF1);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+	
 	OLED_WriteCmd(slf, 0xDA);//--set com pins hardware configuration
 	OLED_WriteCmd(slf, 0x12);
+	
+	OLED_WriteCmd(slf, 0xd5);//--set display clock divide ratio/oscillator frequency
+	OLED_WriteCmd(slf, 0x80);//--set divide ratio, Set Clock as 100 Frames/Sec
+	
+	OLED_WriteCmd(slf, 0xD9);//--set pre-charge period
+	OLED_WriteCmd(slf, 0xF1);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+	
 	OLED_WriteCmd(slf, 0xDB);//--set vcomh
 	OLED_WriteCmd(slf, 0x40);//Set VCOM Deselect Level
-	OLED_WriteCmd(slf, 0x20);//-Set Page Addressing Mode (0x00/0x01/0x02)
-	OLED_WriteCmd(slf, 0x02);//
+	
 	OLED_WriteCmd(slf, 0x8D);//--set Charge Pump enable/disable
 	OLED_WriteCmd(slf, 0x14);//--set(0x10) disable
-	OLED_WriteCmd(slf, 0xA4);// Disable Entire Display On (0xa4/0xa5)
-	OLED_WriteCmd(slf, 0xA6);// Disable Inverse Display On (0xa6/a7) 
-	OLED_WriteCmd(slf, 0xAF);//--turn on oled panel
+	
+	OLED_WriteCmd(slf, SSD1306_DISPLAY_ON);//--turn on oled panel
 	
 	OLED_SetPos(slf, 0, 0); 	
 	OLED_Clear(slf);//OLED清屏
